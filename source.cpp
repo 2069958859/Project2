@@ -160,6 +160,7 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
 
 void calculate(string post) //计算后缀表达式
 {
+    //呵呵
 }
 int main()
 {
