@@ -103,8 +103,21 @@ string sub(string mm, string nn) // double 减法运算,计算mm-nn
             flag++;
         }
     }
-    ans = ans.substr(0, ans.size() - flag); //除去前面的0
+    ans = ans.substr(0, ans.size() - flag + 1); //除去前面的0
+    if (dot >= ans.length())
+    {
+        ans.append(dot - ans.length() + 1, '0');
+    }
     reverse(ans.begin(), ans.end());
+    if (negative)
+    {
+        ans = "-" + ans;
+    }
+    if (dot != 0)
+    {
+        ans = ans.insert(ans.length() - dot, ".");
+    }
+    return ans;
 }
 
 string add(string mm, string nn) // double 加法的运算
@@ -144,12 +157,54 @@ string add(string mm, string nn) // double 加法的运算
         flag = flag / 10; //进位
     }
     reverse(ans.begin(), ans.end());
-    ans = ans.insert(ans.length() - dot, ".");
+    if (dot != 0)
+    {
+        ans = ans.insert(ans.length() - dot, ".");
+    }
+    return ans;
+}
+
+string multiply(string mm, string nn)
+{
+    string m = mm, n = nn;
+    bool negative = false;
+
+    if (m.size() < n.size() || (m.size() == n.size() && m < n))
+    { //保证m大
+        swap(m, n);
+    }
+    int a = m.size();
+    int b = n.size();
+    int flag;
+    string ans;
+    for (int i = b - 1; i >= 0; i--)
+    {
+        flag = 0;
+        string aa(b - i - 1, '0');
+        for (int j = a - 1; j >= 0; j--)
+        {
+
+            flag = flag + (m[j] - '0') * (n[i] - '0');
+            aa.append(to_string(flag % 10));
+            flag = flag / 10;
+        }
+        if (flag != 0)
+        {
+            aa.append(to_string(flag));
+        }
+        reverse(aa.begin(), aa.end());
+        ans = add(ans, aa);
+    }
+    if (negative)
+    {
+        ans = "-" + ans;
+    }
     return ans;
 }
 
 int main()
 {
-    cout << add("99999999999999.22222222", "123.0231");
+    // cout << add("99999999999999.22222222", "123.0231");
+    cout << sub("1003478354", "9999999999") << endl;
     return 0;
 }
