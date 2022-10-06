@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int dot = -1;              //记录dot所在的位置
+int dot = 0;               //记录dot所在的位置
 string findDot(string str) //查找是否有小数点，如果有，就记录小数有几位并抹去小数点
 {
     string a = str;
@@ -23,6 +23,15 @@ string findDot(string str) //查找是否有小数点，如果有，就记录小
     return a;
 }
 
+bool isNegtive(string x) //返回是否为负数
+{
+    if (x.at(0) == '-')
+    {
+        return true;
+    }
+    return false;
+}
+
 bool allZero(string str)
 { //检查是否为0
     for (int i = 0; i < str.size(); i++)
@@ -35,25 +44,14 @@ bool allZero(string str)
     return true;
 }
 
-string sub(string mm, string nn) // double 减法运算,计算mm-nn
-{
-    if (mm == nn || (allZero(mm) && allZero(nn)))
-    {
-        return "0";
-    }
-    else if (allZero(mm))
-    {
-        return "-" + nn;
-    }
-    else if (allZero(nn))
-    {
-        return mm;
-    }
-    int dot1, dot2;
-    bool negative = false; //记录结果的正负
-    string m = findDot(mm);
+string m, n;
+int dot1 = 0, dot2 = 0;
+
+void process(string mm, string nn)
+{ //处理输入的数据，记录有几位小数，将小数位较少的用0补齐
+    m = findDot(mm);
     dot1 = dot;
-    string n = findDot(nn);
+    n = findDot(nn);
     dot2 = dot;
     if (dot1 != 0 || dot2 != 0)
     { //补齐位数
@@ -68,6 +66,24 @@ string sub(string mm, string nn) // double 减法运算,计算mm-nn
             dot = dot2;
         }
     }
+}
+
+string sub(string mm, string nn) // double 减法运算,计算mm-nn
+{
+    process(mm, nn);
+    if (mm == nn || (allZero(mm) && allZero(nn)))
+    {
+        return "0";
+    }
+    else if (allZero(mm))
+    {
+        return "-" + nn;
+    }
+    else if (allZero(nn))
+    {
+        return mm;
+    }
+    bool negative = false; //记录结果的正负
 
     if (m.size() < n.size() || (m.size() == n.size() && m < n))
     { //保证m大
@@ -109,38 +125,21 @@ string sub(string mm, string nn) // double 减法运算,计算mm-nn
         ans.append(dot - ans.length() + 1, '0');
     }
     reverse(ans.begin(), ans.end());
-    if (negative)
-    {
-        ans = "-" + ans;
-    }
+
     if (dot != 0)
     {
         ans = ans.insert(ans.length() - dot, ".");
+    }
+    if (negative)
+    {
+        ans = "-" + ans;
     }
     return ans;
 }
 
 string add(string mm, string nn) // double 加法的运算
 {
-    int dot1, dot2;
-
-    string m = findDot(mm);
-    dot1 = dot;
-    string n = findDot(nn);
-    dot2 = dot;
-    if (dot1 != 0 || dot2 != 0)
-    { //补齐位数
-        if (dot1 >= dot2)
-        { // m的小数位多
-            n.append(dot1 - dot2, '0');
-            dot = dot1;
-        }
-        else if (dot1 < dot2)
-        {
-            m.append(dot2 - dot1, '0');
-            dot = dot2;
-        }
-    }
+    process(mm, nn);
 
     int a = m.size() - 1;
     int b = n.size() - 1;
@@ -166,9 +165,24 @@ string add(string mm, string nn) // double 加法的运算
 
 string multiply(string mm, string nn)
 {
-    string m = mm, n = nn;
+    int dotsum = 0;
+    string m = findDot(mm);
+    dotsum = dot;
+    string n = findDot(nn);
+    dotsum += dot;
     bool negative = false;
-
+    if (isNegtive(mm))
+    {
+        m = m.substr(1, mm.length());
+    }
+    if (isNegtive(nn))
+    {
+        n = n.substr(1, nn.length());
+    }
+    if ((isNegtive(mm) && !isNegtive(nn)) || (!isNegtive(mm) && isNegtive(nn)))
+    {
+        negative = true;
+    }
     if (m.size() < n.size() || (m.size() == n.size() && m < n))
     { //保证m大
         swap(m, n);
@@ -192,8 +206,24 @@ string multiply(string mm, string nn)
         {
             aa.append(to_string(flag));
         }
+
         reverse(aa.begin(), aa.end());
         ans = add(ans, aa);
+    }
+
+    if (dotsum != 0)
+    {
+        flag = 0;
+        for (int i = 0; i < ans.size() - dotsum - 1; i++)
+        {
+            if (ans[i] == '0')
+            {
+                flag++;
+            }
+        }
+        ans = ans.substr(flag, ans.size()); //除去前面的0
+
+        ans = ans.insert(ans.length() - dotsum, ".");
     }
     if (negative)
     {
@@ -204,7 +234,8 @@ string multiply(string mm, string nn)
 
 int main()
 {
-    // cout << add("99999999999999.22222222", "123.0231");
-    cout << sub("1003478354", "9999999999") << endl;
+    cout << add("0.002", "0.3") << endl;
+    cout << sub("0.002", "0.3") << endl;
+    cout << multiply("0.012346", "0.043") << endl;
     return 0;
 }
