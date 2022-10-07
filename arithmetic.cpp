@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "source.hpp"
 
 using namespace std;
 
@@ -70,6 +71,18 @@ void process(string mm, string nn)
 
 string sub(string mm, string nn) // double 减法运算,计算mm-nn
 {
+    if (!isNegtive(mm) && isNegtive((nn)))
+    {
+        return add(mm, nn.substr(1, nn.length()));
+    }
+    else if (isNegtive(mm) && !isNegtive((nn)))
+    {
+        return "-" + add(mm.substr(1, mm.length()), nn);
+    }
+    else if (isNegtive(mm) && isNegtive((nn)))
+    {
+        return sub(nn.substr(1, nn.length()), mm.substr(1, mm.length()));
+    }
     process(mm, nn);
     if (mm == nn || (allZero(mm) && allZero(nn)))
     {
@@ -118,8 +131,12 @@ string sub(string mm, string nn) // double 减法运算,计算mm-nn
         {
             flag++;
         }
+        else
+        {
+            break;
+        }
     }
-    ans = ans.substr(0, ans.size() - flag + 1); //除去前面的0
+    ans = ans.substr(0, ans.size() - flag); //除去前面的0
     if (dot >= ans.length())
     {
         ans.append(dot - ans.length() + 1, '0');
@@ -139,6 +156,34 @@ string sub(string mm, string nn) // double 减法运算,计算mm-nn
 
 string add(string mm, string nn) // double 加法的运算
 {
+    if (mm.size() == 0 || allZero(mm))
+    {
+        if (nn.size() == 0)
+        {
+            return "0";
+        }
+        return nn;
+    }
+    if (nn.size() == 0 || allZero(nn))
+    {
+        if (mm.size() == 0)
+        {
+            return "0";
+        }
+        return mm;
+    }
+    if (!isNegtive(mm) && isNegtive((nn)))
+    {
+        return sub(mm, nn.substr(1, nn.length()));
+    }
+    else if (isNegtive(mm) && !isNegtive((nn)))
+    {
+        return sub(nn, mm.substr(1, mm.length()));
+    }
+    else if (isNegtive(mm) && isNegtive((nn)))
+    {
+        return "-" + add(nn.substr(1, nn.length()), mm.substr(1, mm.length()));
+    }
     process(mm, nn);
 
     int a = m.size() - 1;
@@ -189,7 +234,7 @@ string multiply(string mm, string nn)
     }
     int a = m.size();
     int b = n.size();
-    int flag;
+    int flag = 0;
     string ans;
     for (int i = b - 1; i >= 0; i--)
     {
@@ -232,10 +277,9 @@ string multiply(string mm, string nn)
     return ans;
 }
 
-int main()
-{
-    cout << add("0.002", "0.3") << endl;
-    cout << sub("0.002", "0.3") << endl;
-    cout << multiply("0.012346", "0.043") << endl;
-    return 0;
-}
+// int main() {
+//     cout << add("0.002", "0.3") << endl;
+//     cout << sub("7", "15") << endl;
+//     cout << multiply("6", "3") << endl;
+//     return 0;
+// }
