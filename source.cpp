@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <valarray>
-#include "source.h"
+#include "source.hpp"
 
 using namespace std;
 
@@ -11,6 +11,8 @@ stack<char> symbolStack;    //存符号的栈
 stack<string> fingerStack;  //存数字的栈
 stack<double> doubleFinger; //以double类型存数字
 vector<string> postfix;
+vector<string> dataName; //存代数式的数据名称
+vector<string> Data;     //存代数式的数据值
 
 double ans;
 
@@ -24,7 +26,7 @@ int getPriority(char c) // get 优先级
     {
         return 2;
     }
-    else if (c == '%' || c == '^')
+    else if (c == '%' || c == '^' || c == 'S')
     {
         return 3;
     }
@@ -34,8 +36,43 @@ int getPriority(char c) // get 优先级
     }
 }
 
+int equalmark = 0;
+
+bool isalgExp(string exp)
+{
+
+    equalmark = exp.find("=", 1);
+    if (equalmark != -1)
+    {
+        return true;
+    }
+    return false;
+}
+
+void algexp(string algexp)
+{ //处理代数式
+    string dataname = "";
+    string temp = "";
+    double data;
+    if (isalgExp(algexp))
+    {
+        dataName.push_back(algexp.substr(0, equalmark));
+        for (int i = equalmark + 1; i < algexp.size(); i++)
+        {
+            temp += algexp[i];
+            while (algexp.length() > i + 1 && (isdigit(algexp[i + 1]) || algexp[i + 1] == '.'))
+            {
+                temp = temp + algexp[i + 1];
+                i++;
+            }
+
+            Data.push_back(temp);
+        }
+    }
+}
+
 string processSymbol(string exp1)
-{ //将负数转化为0-a，这样之后的加减就不用考虑正负号了
+{ //将负数转化为0-a
     string exp = exp1;
     for (size_t i = 0; i < exp.size(); i++)
     {
@@ -121,6 +158,19 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
                     i++;
                 }
                 postfix.push_back(temp);
+            }
+            else if (exp[i] == 's' && exp[i + 1] == 'q' && exp[i + 2] == 'r' &&
+                     exp[i + 3] == 't')
+            { // math function sqrt(x)
+                temp += exp[i + 5];
+                while (exp.length() > i + 6 && (isdigit(exp[i + 6]) || exp[i + 6] == '.'))
+                {
+                    temp = temp + exp[i + 6];
+                    i++;
+                }
+                i = i + 6;
+                postfix.push_back(temp);
+                symbolStack.push('S'); //作为sqrt函数的记号
             }
         }
     }
@@ -241,13 +291,42 @@ void calculate(vector<string> post) //计算后缀表达式
             fingerStack.push(to_string(fmod(d1, d2)));
             doubleFinger.push(fmod(d1, d2)); // fmod可以小数求余
         }
+        else if (temp == "S")
+        { // sqrt(x) function
+            if (!fingerStack.empty())
+            {
+                d2 = doubleFinger.top();
+                fingerStack.pop();
+                doubleFinger.pop();
+            }
+            fingerStack.push(to_string(sqrt(d2)));
+            doubleFinger.push(sqrt(d2)); // sqrt 函数开平方
+        }
     }
 }
 
 int main()
 {
     string exptest;
-    getline(cin, exptest);
+    do
+    {
+        getline(cin, exptest);
+        algexp(exptest);
+    } while (isalgExp(exptest));
+
+    for (int i = 0; i < dataName.size(); i++)
+    { //将式子中的变量名替换成值
+        int place = exptest.find(dataName[i]);
+        if (place != -1)
+        {
+            exptest.replace(place, dataName[i].length(), Data[i]);
+        }
+        else
+        {
+            cout << "variables are not be defined" << endl;
+            return 0;
+        }
+    }
     exptest = processSymbol(exptest);
 
     getPostfix(exptest);
