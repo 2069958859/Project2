@@ -276,10 +276,3 @@ string multiply(string mm, string nn)
     }
     return ans;
 }
-
-// int main() {
-//     cout << add("0.002", "0.3") << endl;
-//     cout << sub("7", "15") << endl;
-//     cout << multiply("6", "3") << endl;
-//     return 0;
-// }

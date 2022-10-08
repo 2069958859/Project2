@@ -10,9 +10,9 @@ using namespace std;
 stack<char> symbolStack;    //存符号的栈
 stack<string> fingerStack;  //存数字的栈
 stack<double> doubleFinger; //以double类型存数字
-vector<string> postfix;
-vector<string> dataName; //存代数式的数据名称
-vector<string> Data;     //存代数式的数据值
+vector<string> postfix;     // expression前缀表达式形式
+vector<string> dataName;    //存代数式的数据名称
+vector<string> Data;        //存代数式的数据值
 
 double ans;
 
@@ -37,9 +37,8 @@ int getPriority(char c) // get 优先级
 }
 
 int equalmark = 0;
-
 bool isalgExp(string exp)
-{
+{ //检查是否为“x=1"的形式
 
     equalmark = exp.find("=", 1);
     if (equalmark != -1)
@@ -109,7 +108,10 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
             flag = '{';
         }
         temp = "";
-        if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/' || exp[i] == '%' || exp[i] == '^')
+        if (exp[i] == ' ')
+        { //处理输入的空格
+        }
+        else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/' || exp[i] == '%' || exp[i] == '^')
         {
             if (symbolStack.empty() || symbolStack.top() == '(' || symbolStack.top() == '[' ||
                 symbolStack.top() == '{')
@@ -148,8 +150,8 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
             }
         }
         else
-        { //数字的情况
-            if (isdigit(exp[i]))
+        {
+            if (isdigit(exp[i])) //数字的情况
             {
                 temp += exp[i];
                 while (exp.length() > i + 1 && (isdigit(exp[i + 1]) || exp[i + 1] == '.'))
@@ -172,6 +174,11 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
                 postfix.push_back(temp);
                 symbolStack.push('S'); //作为sqrt函数的记号
             }
+            else
+            { //非法输入
+                cout << "not valid input!" << endl;
+                exit(0); //直接结束程序
+            }
         }
     }
     while (!symbolStack.empty())
@@ -185,7 +192,7 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
 
 string num1, num2;
 
-void assignNum()
+void assignNum() //从栈中取值用来计算
 {
     if (!fingerStack.empty())
     {
@@ -199,6 +206,25 @@ void assignNum()
         fingerStack.pop();
         doubleFinger.pop();
     }
+}
+string erasepostZero(string str) //去掉小数点后多余的0
+{
+    string ans;
+    int dot = str.find(1, '.');
+    int zeros = 0;
+    for (int i = str.size() - 1; i >= dot; i--)
+    {
+        if (str[i] == '0' || str[i] == '.')
+        {
+            zeros++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    ans = str.substr(0, str.size() - zeros);
+    return ans;
 }
 
 void calculate(vector<string> post) //计算后缀表达式
@@ -249,11 +275,12 @@ void calculate(vector<string> post) //计算后缀表达式
             }
             if (d2 == 0)
             {
-                cout << "错误：被除数为0" << endl;
+                cout << "错误：除数为0" << endl;
+                exit(0);
             }
             else
             {
-                fingerStack.push(to_string(d1 / d2));
+                fingerStack.push(erasepostZero(to_string(d1 / d2)));
                 doubleFinger.push(d1 / d2);
             }
         }
@@ -271,7 +298,7 @@ void calculate(vector<string> post) //计算后缀表达式
                 fingerStack.pop();
                 doubleFinger.pop();
             }
-            fingerStack.push(to_string(pow(d1, d2)));
+            fingerStack.push(erasepostZero(to_string(pow(d1, d2))));
             doubleFinger.push(pow(d1, d2));
         }
         else if (temp == "%")
@@ -288,7 +315,7 @@ void calculate(vector<string> post) //计算后缀表达式
                 fingerStack.pop();
                 doubleFinger.pop();
             }
-            fingerStack.push(to_string(fmod(d1, d2)));
+            fingerStack.push(erasepostZero(to_string(fmod(d1, d2))));
             doubleFinger.push(fmod(d1, d2)); // fmod可以小数求余
         }
         else if (temp == "S")
@@ -299,12 +326,11 @@ void calculate(vector<string> post) //计算后缀表达式
                 fingerStack.pop();
                 doubleFinger.pop();
             }
-            fingerStack.push(to_string(sqrt(d2)));
+            fingerStack.push(erasepostZero(to_string(sqrt(d2))));
             doubleFinger.push(sqrt(d2)); // sqrt 函数开平方
         }
     }
 }
-
 int main()
 {
     string exptest;
@@ -328,9 +354,8 @@ int main()
         }
     }
     exptest = processSymbol(exptest);
-
     getPostfix(exptest);
     calculate(postfix);
-    cout << doubleFinger.top() << endl;
+    cout << fingerStack.top() << endl;
     return 0;
 }
