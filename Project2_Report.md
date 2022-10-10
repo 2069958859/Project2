@@ -118,7 +118,6 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
                 while (!symbolStack.empty() && (getPriority(exp[i]) <= getPriority(symbolStack.top())))
                 {
                     temp += symbolStack.top();
-                    // cout << temp << endl;
                     symbolStack.pop();
                     postfix.push_back(temp);
                     temp = "";
@@ -330,17 +329,7 @@ void algexp(string algexp)
     if (isalgExp(algexp))
     {
         dataName.push_back(algexp.substr(0, equalmark));
-        for (int i = equalmark + 1; i < algexp.size(); i++)
-        {
-            temp += algexp[i];
-            while (algexp.length() > i + 1 && (isdigit(algexp[i + 1]) || algexp[i + 1] == '.'))
-            {
-                temp = temp + algexp[i + 1];
-                i++;
-            }
-
-            Data.push_back(temp);
-        }
+        Data.push_back(algexp.substr(equalmark + 1, algexp.size()));
     }
 }
 
@@ -348,57 +337,90 @@ void algexp(string algexp)
 
 ### 4、main function
 
-> If the assignment is not complete, it will keep input line.<br>
+> If the assignment is not complete, it will keep input line， it will terminate when we input "exit", or it will wait for the next expression.<br>
 
 ```java
 int main()
 {
-    string exptest;
-    do
+    string expression;
+    while (true)//可以一直计算直到遇到“exit”
     {
-        getline(cin, exptest);
-        algexp(exptest);
-    } while (isalgExp(exptest));
-
-    for (int i = 0; i < dataName.size(); i++)
-    { //将式子中的变量名替换成值
-        int place = exptest.find(dataName[i]);
-        if (place != -1)
+        getline(cin, expression);
+        algexp(expression);
+        if (expression == "")//输入回车的情况
         {
-            exptest.replace(place, dataName[i].length(), Data[i]);
+        }
+        else if (isExit(expression))
+        {
+            break;
+        }
+        else if (expression == "help")//打印帮助文档
+        {
+            help();
         }
         else
-        {
-            cout << "variables are not be defined" << endl;
-            return 0;
+        { //替换常数
+            int placePI = expression.find("PI");
+            while (placePI != -1)
+            {
+                expression.replace(placePI, 2, "3.14159265358");
+                placePI = expression.find("PI");
+            }
+            int placeE = expression.find("E");
+            while (placeE != -1)
+            {
+                expression.replace(placeE, 1, "2.718281828459");
+                placeE = expression.find("E");
+            }
+
+            while (isalgExp(expression)) //是给变量赋值的式子
+            {
+                getline(cin, expression);
+                algexp(expression);
+            }
+            for (int i = 0; i < dataName.size(); i++)
+            { //将式子中的变量名替换成值
+                int place = expression.find(dataName[i]);
+                while (place != -1)
+                {
+                    expression.replace(place, dataName[i].length(), Data[i]);
+                    place = expression.find(dataName[i]);
+                }
+            }
+            expression = processSymbol(expression);
+            getPostfix(expression);
+            calculate(postfix);
+            cout << fingerStack.top() << endl;
+
+            dataName.clear(); //清空之前的信息
+            Data.clear();
+            postfix.clear();
+            clearStack(); //将栈清空
         }
     }
-    exptest = processSymbol(exptest);
-    getPostfix(exptest);
-    calculate(postfix);
-    cout << fingerStack.top() << endl;
     return 0;
 }
-
 ```
 
 ## Part 3 - Result & Veriﬁcation
 
-### 1、I use cmake to manage the source files and get the right answers for the given test cases:
+### 1、I use cmake to manage the source files and get the right answers for the given test cases, it will stop when input "exit".:
 
 ```java
 project(hello)
 add_executable(cal source.cpp arithmetic.cpp )
 ```
 
-![结果截图1](./结果截图1.png)
+![结果截图1new](./结果截图1new.png)
 
 ### 2、other test cases:
 
-![other](./othercases1.png)
-![混合括号1](./混合括号1.png)
-![结果3](./结果3.png)
-![hello](./hello.png)
+![othernew](./othernew.png)
+
+### Variables can be definited with any names made up of letters: x, y, zz, hello .etc, and variables can be used many times. Besides, it can be defined by an expression:
+
+![hellon](./hellon.png)
+![赋值](./fuzhi.png)
 
 ### And it can support negative calculating:
 
@@ -411,6 +433,10 @@ add_executable(cal source.cpp arithmetic.cpp )
 ### if there are some blanks, it can calculate correctly:
 
 ![空格](./空格.png)
+
+### Here is a help documentation which can tell users how to use it when input "help":(I will show only part of it)
+
+![help](./help.png)
 
 ## Part 4 - Problems & Summary
 

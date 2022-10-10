@@ -14,8 +14,6 @@ vector<string> postfix;     // expression前缀表达式形式
 vector<string> dataName;    //存代数式的数据名称
 vector<string> Data;        //存代数式的数据值
 
-double ans;
-
 int getPriority(char c) // get 优先级
 {
     if (c == '+' || c == '-')
@@ -37,6 +35,7 @@ int getPriority(char c) // get 优先级
 }
 
 int equalmark = 0;
+
 bool isalgExp(string exp)
 { //检查是否为“x=1"的形式
 
@@ -52,21 +51,21 @@ void algexp(string algexp)
 { //处理代数式
     string dataname = "";
     string temp = "";
-    double data;
     if (isalgExp(algexp))
     {
         dataName.push_back(algexp.substr(0, equalmark));
-        for (int i = equalmark + 1; i < algexp.size(); i++)
-        {
-            temp += algexp[i];
-            while (algexp.length() > i + 1 && (isdigit(algexp[i + 1]) || algexp[i + 1] == '.'))
-            {
-                temp = temp + algexp[i + 1];
-                i++;
-            }
+        Data.push_back(algexp.substr(equalmark + 1, algexp.size()));
+        // for (int i = equalmark + 1; i < algexp.size(); i++)
+        // {
+        //     temp += algexp[i];
+        //     while (algexp.length() > i + 1 && (isdigit(algexp[i + 1]) || algexp[i + 1] == '.'))
+        //     {
+        //         temp = temp + algexp[i + 1];
+        //         i++;
+        //     }
 
-            Data.push_back(temp);
-        }
+        //     Data.push_back(temp);
+        // }
     }
 }
 
@@ -207,6 +206,7 @@ void assignNum() //从栈中取值用来计算
         doubleFinger.pop();
     }
 }
+
 string erasepostZero(string str) //去掉小数点后多余的0
 {
     string ans;
@@ -331,31 +331,145 @@ void calculate(vector<string> post) //计算后缀表达式
         }
     }
 }
+
+bool isExit(string exp)
+{
+    if (exp == "exit")
+    {
+        return true;
+    }
+    return false;
+}
+
+void clearStack()
+{
+    while (!symbolStack.empty())
+    {
+        symbolStack.pop();
+    }
+    while (!fingerStack.empty())
+    {
+        fingerStack.pop();
+    }
+    while (!doubleFinger.empty())
+    {
+        doubleFinger.pop();
+    }
+}
+
+void help()
+{
+    cout << "This is an instruction to the calculator user." << endl;
+    cout << "constant value:" << endl;
+    cout << "E=2.718281828459" << endl;
+    cout << "PI=3.14159265358" << endl;
+    cout << endl;
+    cout << "Supported functions:" << endl;
+    cout << "1. Basic mathematical calculation: + - * / % ^" << endl;
+    cout << "example-1.1:" << endl;
+    cout << "3*4" << endl;
+    cout << "12" << endl;
+    cout << "example-1.2:" << endl;
+    cout << "3.45/3.2" << endl;
+    cout << "1.078125" << endl;
+    cout << endl;
+
+    cout << "2. calculation with brackets: ( ) [ ] { }" << endl;
+    cout << "example-2.1:" << endl;
+    cout << "(4.5+6.8)*1.2" << endl;
+    cout << "13.56" << endl;
+    cout << "example-2.2:" << endl;
+    cout << "{2+3*[5+6/(2+3)]*(2+3)}*2" << endl;
+    cout << "190.0" << endl;
+    cout << endl;
+
+    cout << "3. Definition with any names made up of letters: x, y, zz, hello ,and can be defined by an expression" << endl;
+    cout << "example-3.1:" << endl;
+    cout << "x=3" << endl;
+    cout << "y=6" << endl;
+    cout << "x+2*y" << endl;
+    cout << "21" << endl;
+    cout << "example-3.2:" << endl;
+    cout << "hello=1" << endl;
+    cout << "world=2" << endl;
+    cout << "x=3" << endl;
+    cout << "x+x*hello-world" << endl;
+    cout << "4" << endl;
+    cout << endl;
+
+    cout << "4. Some single math functions:" << endl;
+    cout << "example-4.1:" << endl;
+    cout << "sqrt(3)" << endl;
+    cout << "1.732051" << endl;
+    cout << "example-4.2:" << endl;
+    cout << endl;
+
+    cout << "5. Arbitrary Precision:" << endl;
+    cout << "Any length of integer or decimal value are supported in this calculator." << endl;
+    cout << "example-5.1:" << endl;
+    cout << "6.333333333333333333333333333333333333333333*2+22.222222222222222222222222222222222222" << endl;
+    cout << "34.888888888888888888888888888888888888666666" << endl;
+    cout << endl;
+}
+
 int main()
 {
-    string exptest;
-    do
+    string expression;
+    while (true)
     {
-        getline(cin, exptest);
-        algexp(exptest);
-    } while (isalgExp(exptest));
-
-    for (int i = 0; i < dataName.size(); i++)
-    { //将式子中的变量名替换成值
-        int place = exptest.find(dataName[i]);
-        if (place != -1)
+        getline(cin, expression);
+        algexp(expression);
+        if (expression == "")
         {
-            exptest.replace(place, dataName[i].length(), Data[i]);
+        }
+        else if (isExit(expression))
+        {
+            break;
+        }
+
+        else if (expression == "help")
+        {
+            help();
         }
         else
-        {
-            cout << "variables are not be defined" << endl;
-            return 0;
+        { //替换常数
+            int placePI = expression.find("PI");
+            while (placePI != -1)
+            {
+                expression.replace(placePI, 2, "3.14159265358");
+                placePI = expression.find("PI");
+            }
+            int placeE = expression.find("E");
+            while (placeE != -1)
+            {
+                expression.replace(placeE, 1, "2.718281828459");
+                placeE = expression.find("E");
+            }
+
+            while (isalgExp(expression)) //是给变量赋值的式子
+            {
+                getline(cin, expression);
+                algexp(expression);
+            }
+            for (int i = 0; i < dataName.size(); i++)
+            { //将式子中的变量名替换成值
+                int place = expression.find(dataName[i]);
+                while (place != -1)
+                {
+                    expression.replace(place, dataName[i].length(), "(" + Data[i] + ")");
+                    place = expression.find(dataName[i]);
+                }
+            }
+            expression = processSymbol(expression);
+            getPostfix(expression);
+            calculate(postfix);
+            cout << fingerStack.top() << endl;
+
+            dataName.clear(); //清空之前的信息
+            Data.clear();
+            postfix.clear();
+            clearStack(); //将栈清空
         }
     }
-    exptest = processSymbol(exptest);
-    getPostfix(exptest);
-    calculate(postfix);
-    cout << fingerStack.top() << endl;
     return 0;
 }
