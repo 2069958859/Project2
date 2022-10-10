@@ -4,6 +4,8 @@ name:李冰（Libing)
 
 SID:12110141
 
+## **My codes are provided on the github <font color=red> https://github.com/2069958859/Project2.git </font> ,please check it there.**
+
 ## Part1-Analysis
 
 > 1、This Project is to implement a much better calculator, I implement 6 operators: + - \* / % ^ and 3 types of parentheses: () [] {} . Besides, it can calculate math functions "sqrt(x)" and be defined using "x=a".<br>
@@ -33,16 +35,16 @@ vector<string> Data;        //存代数式的数据值
 
 > Mainly used to get postfix expressions and calculate results using stack.
 
-```java
+````java
 bool isalgExp(string exp);  //检查是否为“x=1"的形式
-void algexp(string algexp); //处理代数式,将等号左右两侧的数据名称和对应的值分别存入两个string数组中
-int getPriority(char c);//获得符号的优先级
+void algexp(string algexp); //处理代数式
+int getPriority(char c);
 string processSymbol(string exp); //将负数转化为0-a
+bool isDouble(string x);          //返回是否是浮点数（整数也判断为true)
 void getPostfix(string exp);      //将表达式转化为后缀表达式
 string erasepostZero(string str); //去掉小数点后多余的0
-void assignNum();//从栈中取值用来计算
-void calculate(vector<string> post); //计算后缀表达式
-```
+void assignNum();
+void calculate(vector<string> post); //计算后缀表达式```
 
 ### In arithmetic.cpp, I will implement following methods:<br>
 
@@ -56,7 +58,7 @@ void process(string mm, string nn); //处理输入的数据，记录有几位小
 string sub(string mm, string nn);   // double 减法运算,计算mm-nn
 string add(string mm, string nn);   // double 加法的运算
 string multiply(string mm, string nn);//double 乘法运算
-```
+````
 
 ### 1、The code of turning the expression to the postfix expression:<br>
 
@@ -108,21 +110,29 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
         }
         else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/' || exp[i] == '%' || exp[i] == '^')
         {
-            if (symbolStack.empty() || symbolStack.top() == '(' || symbolStack.top() == '[' ||
-                symbolStack.top() == '{')
+            if (exp[i + 1] == '+' || exp[i + 1] == '-' || exp[i + 1] == '*' || exp[i + 1] == '/' || exp[i + 1] == '%' || exp[i + 1] == '^')
             {
-                symbolStack.push(exp[i]);
+                cout << "not valid input (multiple symbols) !" << endl;
+                exit(0);
             }
             else
             {
-                while (!symbolStack.empty() && (getPriority(exp[i]) <= getPriority(symbolStack.top())))
+                if (symbolStack.empty() || symbolStack.top() == '(' || symbolStack.top() == '[' ||
+                    symbolStack.top() == '{')
                 {
-                    temp += symbolStack.top();
-                    symbolStack.pop();
-                    postfix.push_back(temp);
-                    temp = "";
+                    symbolStack.push(exp[i]);
                 }
-                symbolStack.push(exp[i]);
+                else
+                {
+                    while (!symbolStack.empty() && (getPriority(exp[i]) <= getPriority(symbolStack.top())))
+                    {
+                        temp += symbolStack.top();
+                        symbolStack.pop();
+                        postfix.push_back(temp);
+                        temp = "";
+                    }
+                    symbolStack.push(exp[i]);
+                }
             }
         }
         else if (exp[i] == '(' || exp[i] == '[' || exp[i] == '{')
@@ -152,6 +162,11 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
                 {
                     temp = temp + exp[i + 1];
                     i++;
+                }
+                if (!isDouble(temp)) //检验数字是否合法
+                {
+                    cout << "not correct number!" << endl;
+                    exit(0);
                 }
                 postfix.push_back(temp);
             }
@@ -227,7 +242,6 @@ void calculate(vector<string> post) //计算后缀表达式
             assignNum();
             fingerStack.push(add(num1, num2));
             doubleFinger.push(stod(add(num1, num2)));
-            //            cout << fingerStack.top() << endl;
         }
         else if (temp == "-")
         {
@@ -429,6 +443,7 @@ add_executable(cal source.cpp arithmetic.cpp )
 ### It can also detect invalid situations:
 
 ![wrongs](./wrongcases.png)
+![cuo](./cuo2.png)
 
 ### if there are some blanks, it can calculate correctly:
 
@@ -555,7 +570,6 @@ string multiply(string mm, string nn)
             }
         }
         ans = ans.substr(flag, ans.size()); //除去前面的0
-
         ans = ans.insert(ans.length() - dotsum, ".");
     }
     if (negative)
