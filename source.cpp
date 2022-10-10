@@ -88,7 +88,48 @@ string processSymbol(string exp1)
     }
     return exp;
 }
+bool isInteger(string x) //返回是否为整数
+{
+    for (int i = 0; i < x.length(); i++)
+    {
 
+        if (!isdigit(x.at(i)))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isDouble(string x) //返回是否是正确的数字
+{
+    int dot = 0;
+    dot = x.find(".", 0);
+    if (dot == x.length() - 1 || dot == 0)
+    {
+        return false;
+    }
+    else if (dot == -1)
+    {
+        if (isInteger(x))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (isInteger(x.substr(0, dot)) && isInteger(x.substr(dot + 1, x.length())))
+        {
+            return true;
+        }
+        return false;
+    }
+}
+//
 void getPostfix(string exp) //将表达式转化为后缀表达式
 {
     string temp;
@@ -112,22 +153,30 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
         }
         else if (exp[i] == '+' || exp[i] == '-' || exp[i] == '*' || exp[i] == '/' || exp[i] == '%' || exp[i] == '^')
         {
-            if (symbolStack.empty() || symbolStack.top() == '(' || symbolStack.top() == '[' ||
-                symbolStack.top() == '{')
+
+            if (exp[i + 1] == '+' || exp[i + 1] == '-' || exp[i + 1] == '*' || exp[i + 1] == '/' || exp[i + 1] == '%' || exp[i + 1] == '^')
             {
-                symbolStack.push(exp[i]);
+                cout << "not valid input (multiple symbols) !" << endl;
+                exit(0);
             }
             else
             {
-                while (!symbolStack.empty() && (getPriority(exp[i]) <= getPriority(symbolStack.top())))
+                if (symbolStack.empty() || symbolStack.top() == '(' || symbolStack.top() == '[' ||
+                    symbolStack.top() == '{')
                 {
-                    temp += symbolStack.top();
-                    // cout << temp << endl;
-                    symbolStack.pop();
-                    postfix.push_back(temp);
-                    temp = "";
+                    symbolStack.push(exp[i]);
                 }
-                symbolStack.push(exp[i]);
+                else
+                {
+                    while (!symbolStack.empty() && (getPriority(exp[i]) <= getPriority(symbolStack.top())))
+                    {
+                        temp += symbolStack.top();
+                        symbolStack.pop();
+                        postfix.push_back(temp);
+                        temp = "";
+                    }
+                    symbolStack.push(exp[i]);
+                }
             }
         }
         else if (exp[i] == '(' || exp[i] == '[' || exp[i] == '{')
@@ -157,6 +206,11 @@ void getPostfix(string exp) //将表达式转化为后缀表达式
                 {
                     temp = temp + exp[i + 1];
                     i++;
+                }
+                if (!isDouble(temp)) //检验数字是否合法
+                {
+                    cout << "not correct number!" << endl;
+                    exit(0);
                 }
                 postfix.push_back(temp);
             }
@@ -245,7 +299,6 @@ void calculate(vector<string> post) //计算后缀表达式
             assignNum();
             fingerStack.push(add(num1, num2));
             doubleFinger.push(stod(add(num1, num2)));
-            //            cout << fingerStack.top() << endl;
         }
         else if (temp == "-")
         {

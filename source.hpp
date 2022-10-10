@@ -7,6 +7,7 @@ bool isalgExp(string exp);  //检查是否为“x=1"的形式
 void algexp(string algexp); //处理代数式
 int getPriority(char c);
 string processSymbol(string exp); //将负数转化为0-a
+bool isDouble(string x);          //返回是否是浮点数（整数也判断为true)
 void getPostfix(string exp);      //将表达式转化为后缀表达式
 string erasepostZero(string str); //去掉小数点后多余的0
 void assignNum();
