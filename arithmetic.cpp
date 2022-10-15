@@ -55,7 +55,7 @@ void process(string mm, string nn)
     n = findDot(nn);
     dot2 = dot;
     if (dot1 != 0 || dot2 != 0)
-    { //补齐位数
+    { //用0补齐位数
         if (dot1 >= dot2)
         { // m的小数位多
             n.append(dot1 - dot2, '0');

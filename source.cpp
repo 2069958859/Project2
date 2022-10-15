@@ -101,7 +101,7 @@ bool isInteger(string x) //返回是否为整数
     return true;
 }
 
-bool isDouble(string x) //返回是否是正确的数字
+bool isDouble(string x) //返回是否是正确的数字（整数 /double)
 {
     int dot = 0;
     dot = x.find(".", 0);

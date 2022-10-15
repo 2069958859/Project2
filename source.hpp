@@ -17,6 +17,6 @@ string findDot(string str); //查找是否有小数点，如果有，就记录�
 bool isNegtive(string x);
 bool allZero(string str);           //检查是否为0
 void process(string mm, string nn); //处理输入的数据，记录有几位小数，将小数位较少的用0补齐
-string sub(string mm, string nn);   // double 减法运算,计算mm-nn
+string sub(string mm, string nn);   // double 减法运算(计算mm-nn)
 string add(string mm, string nn);   // double 加法的运算
 string multiply(string mm, string nn);
